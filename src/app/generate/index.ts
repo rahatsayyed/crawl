@@ -78,12 +78,13 @@ const client = new OpenAI({
 // });
 
 // -------------------- PROMPT 2 enhanced by grok --------------------
-const completion = await client.chat.completions.create({
-  model: "grok-3-mini-beta",
-  messages: [
-    {
-      role: "system",
-      content: `You are a helpful assistant that creates HTML-formatted cover letters for software developer job seekers by modifying a template to include personalized content based on company-specific information. You will receive company information scraped from their website.
+async function coverLetter() {
+  const completion = await client.chat.completions.create({
+    model: "grok-3-mini-beta",
+    messages: [
+      {
+        role: "system",
+        content: `You are a helpful assistant that creates HTML-formatted cover letters for software developer job seekers by modifying a template to include personalized content based on company-specific information. You will receive company information scraped from their website.
 
       **Input Format**:
       {
@@ -120,10 +121,10 @@ const completion = await client.chat.completions.create({
       - Escape special characters in the JSON output to prevent parsing errors.
       - Verify the total word count (excluding HTML tags) is 150–190 words before finalizing the output.
       - If scraped data is incomplete, use reasonable assumptions about the company’s mission or tech stack to craft compelling personalized content.`,
-    },
-    {
-      role: "user",
-      content: `Use this information to generate a valid JSON output:
+      },
+      {
+        role: "user",
+        content: `Use this information to generate a valid JSON output:
       {
         "email": [{ "name": "Generated Name", "email": "email@domain.com" }, ...],
         "message": "Complete HTML-formatted cover letter with personalized content"
@@ -131,8 +132,8 @@ const completion = await client.chat.completions.create({
       ---
       SCRAPED INFO: ${scrapedData}
       `,
-    },
-  ],
-});
-
-console.log(completion.choices[0].message);
+      },
+    ],
+  });
+  console.log(completion.choices[0].message);
+}

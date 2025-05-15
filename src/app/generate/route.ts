@@ -1,22 +1,17 @@
-import OpenAI from "openai";
+import { NextRequest, NextResponse } from "next/server";
 
-const client = new OpenAI({
-  apiKey: process.env.GROK_API,
-  baseURL: "https://api.x.ai/v1",
-});
+export async function GET() {
+  return NextResponse.json({ message: "up and running" });
+}
 
-const completion = await client.chat.completions.create({
-  model: "grok-3-mini-beta",
-  messages: [
-    {
-      role: "system",
-      content:
-        "You are Grok, a chatbot inspired by the Hitchhiker's Guide to the Galaxy.",
-    },
-    {
-      role: "user",
-      content: "What is the meaning of life, the universe, and everything?",
-    },
-  ],
-});
-// console.log(completion.choices[0].message);
+export async function POST(request: NextRequest) {
+  try {
+    return NextResponse.json("not implemented yet");
+  } catch (err) {
+    console.error("API Error:", err instanceof Error ? err.message : err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
