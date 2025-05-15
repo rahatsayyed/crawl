@@ -98,6 +98,7 @@ async function coverLetter() {
       3. **Generate Email Names**: For each email in the input 'email' array, auto-generate a name by extracting the part before the "@" (e.g., "john@company.com" becomes "John"). Capitalize the first letter of the name.
       4. **Word Count**: Ensure the total cover letter (excluding HTML tags) is 150–190 words, with the personalized content(woven into the template) being 30–50 words. Adjust the template wording if needed to stay within limits.
       5. **Output**: Return only valid JSON with the entire modified cover letter in HTML format in the 'message' field.
+      6. **Keep Name Handle**: Ensure the generated cover lettet (HTML-FORMATTED) includes {{name}} as it is.
 
       **Output Format**:
       {
