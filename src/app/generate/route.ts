@@ -6,7 +6,11 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    return NextResponse.json("not implemented yet");
+   const result= {
+        email: [{ name: "Hr", email: "hr@domain.com" }, { name: "domain Team", email: "info@domain.com" }],
+        message: "Complete HTML-formatted cover letter with personalized content"
+      }
+    return NextResponse.json(result);
   } catch (err) {
     console.error("API Error:", err instanceof Error ? err.message : err);
     return NextResponse.json(
