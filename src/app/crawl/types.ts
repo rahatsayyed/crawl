@@ -11,7 +11,7 @@ export interface PageData {
 }
 
 export interface CrawlResult {
-  emails: string[];
-  phones: string[];
+  emails: string;
+  phones: string;
   pages: Record<string, string>;
 }

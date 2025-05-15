@@ -138,8 +138,8 @@ export const crawlWebsite = async (mainUrl: string): Promise<CrawlResult> => {
     });
 
     return {
-      emails: Array.from(emailSet),
-      phones: Array.from(phoneSet),
+      emails: Array.from(emailSet).join(", "),
+      phones: `'${Array.from(phoneSet).join(", ")}`,
       pages: data,
     };
   } catch (err) {
