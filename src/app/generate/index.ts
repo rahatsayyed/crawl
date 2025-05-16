@@ -1,6 +1,5 @@
 import OpenAI from "openai";
 
-const scrapedData = "not available";
 const GROKKEY = process.env.GROK_API;
 const client = new OpenAI({
   apiKey: GROKKEY,
@@ -78,7 +77,11 @@ const client = new OpenAI({
 // });
 
 // -------------------- PROMPT 2 enhanced by grok --------------------
-async function coverLetter() {
+async function coverLetter(
+  template: string,
+  scrapedData: Record<string, string>,
+  emails: string[]
+) {
   const completion = await client.chat.completions.create({
     model: "grok-3-mini-beta",
     messages: [
@@ -109,12 +112,7 @@ async function coverLetter() {
       **Tone**: Maintain a casual-professional, authentic, and enthusiastic tone throughout, as if written by a genuinely interested developer. Avoid resume repetition or generalizations.
 
       **HTML Template**:
-      <p>Hi {{name}},</p>
-      <p>I’m Rahat Sayyed, a software developer with two years of experience building with tools like <strong>React</strong>, <strong>Next.js</strong>, <strong>TypeScript</strong>, <strong>Node.js</strong>, <strong>Express.js</strong>, <strong>MongoDB</strong>, and a little experience with <strong>Firestore</strong>, and <strong>Supabase (Postgres)</strong>. I also have experience with <strong>Ethereum</strong> and <strong>Cardano</strong>.</p>
-      <p>I pick up new tech stacks in 20–25 days and thrive in roles where I can jump in and make an impact. I’m excited to bring my skills and growth mindset to your team.</p>
-      <p>Check out my work: <a href="https://rahatsayyed.xyz" target="_blank">portfolio</a> | <a href="https://flowcv.com/resume/w0f4aim4wh" target="_blank">resume</a></p>
-      <p>Looking forward to chatting about how I can contribute!</p>
-      <p>Best,<br>Rahat Sayyed</p>
+      ${template}
 
       **Requirements**:
       - Modify the template to weave in personalized content (30–50 words) about the company’s unique qualities, ensuring a smooth, cohesive letter.
@@ -131,10 +129,21 @@ async function coverLetter() {
         "message": "Complete HTML-formatted cover letter with personalized content"
       }
       ---
-      SCRAPED INFO: ${scrapedData}
+      SCRAPED INFO: 
+      {
+      emails: ${emails}
+      data:${scrapedData}
+      }
       `,
       },
     ],
   });
   console.log(completion.choices[0].message);
 }
+
+// <p>Hi {{name}},</p>
+//       <p>I’m Rahat Sayyed, a software developer with two years of experience building with tools like <strong>React</strong>, <strong>Next.js</strong>, <strong>TypeScript</strong>, <strong>Node.js</strong>, <strong>Express.js</strong>, <strong>MongoDB</strong>, and a little experience with <strong>Firestore</strong>, and <strong>Supabase (Postgres)</strong>. I also have experience with <strong>Ethereum</strong> and <strong>Cardano</strong>.</p>
+//       <p>I pick up new tech stacks in 20–25 days and thrive in roles where I can jump in and make an impact. I’m excited to bring my skills and growth mindset to your team.</p>
+//       <p>Check out my work: <a href="https://rahatsayyed.xyz" target="_blank">portfolio</a> | <a href="https://flowcv.com/resume/w0f4aim4wh" target="_blank">resume</a></p>
+//       <p>Looking forward to chatting about how I can contribute!</p>
+//       <p>Best,<br>Rahat Sayyed</p>
