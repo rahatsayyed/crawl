@@ -77,17 +77,14 @@ const client = new OpenAI({
 // });
 
 // -------------------- PROMPT 2 enhanced by grok --------------------
-async function coverLetter(
-  template: string,
-  scrapedData: Record<string, string>,
-  emails: string[]
-) {
-  const completion = await client.chat.completions.create({
-    model: "grok-3-mini-beta",
-    messages: [
-      {
-        role: "system",
-        content: `You are a helpful assistant that creates HTML-formatted cover letters for software developer job seekers by modifying a template to include personalized content based on company-specific information. You will receive company information scraped from their website.
+export async function coverLetter(data: string) {
+  try {
+    const completion = await client.chat.completions.create({
+      model: "grok-3-mini-beta",
+      messages: [
+        {
+          role: "system",
+          content: `You are a helpful assistant that creates HTML-formatted cover letters for software developer job seekers by modifying a template to include personalized content based on company-specific information. You will receive company information scraped from their website.
 
       **Input Format**:
       {
@@ -111,8 +108,7 @@ async function coverLetter(
 
       **Tone**: Maintain a casual-professional, authentic, and enthusiastic tone throughout, as if written by a genuinely interested developer. Avoid resume repetition or generalizations.
 
-      **HTML Template**:
-      ${template}
+      **HTML Template**: is with scraped data
 
       **Requirements**:
       - Modify the template to weave in personalized content (30–50 words) about the company’s unique qualities, ensuring a smooth, cohesive letter.
@@ -120,25 +116,30 @@ async function coverLetter(
       - Escape special characters in the JSON output to prevent parsing errors.
       - Verify the total word count (excluding HTML tags) is 150–190 words before finalizing the output.
       - If scraped data is incomplete, use reasonable assumptions about the company’s mission or tech stack to craft compelling personalized content.`,
-      },
-      {
-        role: "user",
-        content: `Use this information to generate a valid JSON output:
+        },
+        {
+          role: "user",
+          content: `Use this information to generate a valid JSON output:
       {
         "email": [{ "name": "Generated Name", "email": "email@domain.com" }, ...],
         "message": "Complete HTML-formatted cover letter with personalized content"
       }
       ---
       SCRAPED INFO: 
-      {
-      emails: ${emails}
-      data:${scrapedData}
-      }
+      ${data}
       `,
-      },
-    ],
-  });
-  console.log(completion.choices[0].message);
+        },
+      ],
+    });
+    const result = completion.choices[0].message;
+    if (!result || !result.content) {
+      throw new Error("AI response not found");
+    }
+    console.log(JSON.parse(result.content));
+    return JSON.parse(result.content);
+  } catch (error: any) {
+    throw error.message;
+  }
 }
 
 // <p>Hi {{name}},</p>

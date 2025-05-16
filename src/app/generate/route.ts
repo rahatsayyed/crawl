@@ -1,25 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
+import { coverLetter } from ".";
+import { data } from "./data";
 
 export async function GET() {
-  return NextResponse.json({ message: "up and running" });
+  return NextResponse.json("UP and RUNNING");
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const emails = body.emails;
-  const data = body.data;
-  const template = body.template;
   try {
-    const result = coverLetter(template, data, emails);
+    const body = await request.text();
+    if (!body) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+    const result = await coverLetter(body);
+    console.log("result", result);
     return NextResponse.json(result);
   } catch (err) {
-    console.error("API Error:", err instanceof Error ? err.message : err);
+    console.error("API Error:", err);
+    if (err instanceof Error) {
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
     );
   }
-}
-function coverLetter(template: any, data: any, emails: any) {
-  throw new Error("Function not implemented.");
 }
