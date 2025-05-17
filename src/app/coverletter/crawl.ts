@@ -1,9 +1,10 @@
-import puppeteer from "puppeteer";
 import * as cheerio from "cheerio";
 import { URL } from "url";
+import chromium from "chrome-aws-lambda";
+import puppeteer from "puppeteer-core";
 import { IGNOREKEYWORDS, MAXDEPTH, MAXPAGESPERPREFIX } from "./constant";
 
-// Utility functions
+// Utility
 const shouldIgnore = (url: string): boolean => {
   return IGNOREKEYWORDS.some((keyword) => url.toLowerCase().includes(keyword));
 };
@@ -12,16 +13,20 @@ const getPathDepth = (pathname: string): number => {
   return pathname.replace(/\/$/, "").split("/").filter(Boolean).length;
 };
 
+// Main Function
 export const getSubURLs = async (mainUrl: string): Promise<string[]> => {
-  let browser;
+  let browser = null;
   try {
     browser = await puppeteer.launch({
-      headless: true, // Recommended for Puppeteer 20+
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
     });
+
     const page = await browser.newPage();
 
-    // Intercept requests to skip loading unnecessary resources
+    // Optimize performance
     await page.setRequestInterception(true);
     page.on("request", (req) => {
       const type = req.resourceType();
@@ -33,7 +38,6 @@ export const getSubURLs = async (mainUrl: string): Promise<string[]> => {
     });
 
     await page.goto(mainUrl, { waitUntil: "networkidle2", timeout: 30000 });
-
     const html = await page.content();
     const $: cheerio.CheerioAPI = cheerio.load(html);
 
@@ -69,14 +73,14 @@ export const getSubURLs = async (mainUrl: string): Promise<string[]> => {
 
         subpages.add(fullHref);
       } catch {
-        // Skip invalid URLs
+        // Ignore malformed URLs
       }
     });
 
     return Array.from(subpages);
   } catch (err) {
     console.error(
-      "Error fetching subURLs with Puppeteer:",
+      "Error fetching subURLs:",
       err instanceof Error ? err.message : err
     );
     return [];
