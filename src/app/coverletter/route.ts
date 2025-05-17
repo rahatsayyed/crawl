@@ -21,12 +21,12 @@ export async function POST(request: NextRequest) {
     }
 
     const pages = await getSubURLs(mainUrl);
-    // const result = await coverLetter({
-    //   pages,
-    //   resumeUrl,
-    //   template,
-    // });
-    return NextResponse.json(pages);
+    const result = await coverLetter({
+      pages,
+      resumeUrl,
+      template,
+    });
+    return NextResponse.json(result);
   } catch (err) {
     console.error("API Error:", err);
     if (err instanceof Error) {
