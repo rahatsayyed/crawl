@@ -118,7 +118,9 @@ const extractMainTextFromPage = async (url: string): Promise<PageData> => {
 };
 
 // Main crawl function
-export const crawlWebsite = async (mainUrl: string): Promise<CrawlResult> => {
+export const crawlWebsite = async (
+  mainUrl: string
+): Promise<{ emails: string[]; phones: string[] }> => {
   try {
     const emailSet = new Set<string>();
     const phoneSet = new Set<string>();
@@ -140,7 +142,7 @@ export const crawlWebsite = async (mainUrl: string): Promise<CrawlResult> => {
     return {
       emails: Array.from(emailSet),
       phones: Array.from(phoneSet),
-      pages: data,
+      // pages: data,
     };
   } catch (err) {
     console.error("Crawl Error:", err instanceof Error ? err.message : err);
