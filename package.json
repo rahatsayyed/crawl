@@ -12,6 +12,7 @@
     "cheerio": "^1.0.0",
     "next": "15.3.2",
     "openai": "^4.98.0",
+    "puppeteer": "^24.8.2",
     "url": "^0.11.4"
   },
   "devDependencies": {
