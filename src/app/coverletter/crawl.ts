@@ -1,8 +1,7 @@
 import * as cheerio from "cheerio";
 import { URL } from "url";
-import chromium from "chrome-aws-lambda";
-import puppeteer from "puppeteer-core";
 import { IGNOREKEYWORDS, MAXDEPTH, MAXPAGESPERPREFIX } from "./constant";
+import axios from "axios";
 
 // Utility
 const shouldIgnore = (url: string): boolean => {
@@ -15,32 +14,9 @@ const getPathDepth = (pathname: string): number => {
 
 // Main Function
 export const getSubURLs = async (mainUrl: string): Promise<string[]> => {
-  let browser = null;
   try {
-    browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath,
-      headless: chromium.headless,
-    });
-
-    const page = await browser.newPage();
-
-    // Optimize performance
-    await page.setRequestInterception(true);
-    page.on("request", (req) => {
-      const type = req.resourceType();
-      if (["image", "stylesheet", "font", "media"].includes(type)) {
-        req.abort();
-      } else {
-        req.continue();
-      }
-    });
-
-    await page.goto(mainUrl, { waitUntil: "networkidle2", timeout: 30000 });
-    const html = await page.content();
-    const $: cheerio.CheerioAPI = cheerio.load(html);
-
+    const response = await axios.get(mainUrl);
+    const $: cheerio.CheerioAPI = cheerio.load(response.data);
     const subpages = new Set<string>();
     const prefixCounter: Record<string, number> = {};
 
@@ -73,7 +49,7 @@ export const getSubURLs = async (mainUrl: string): Promise<string[]> => {
 
         subpages.add(fullHref);
       } catch {
-        // Ignore malformed URLs
+        // Skip invalid URLs
       }
     });
 
@@ -83,8 +59,6 @@ export const getSubURLs = async (mainUrl: string): Promise<string[]> => {
       "Error fetching subURLs:",
       err instanceof Error ? err.message : err
     );
-    return [];
-  } finally {
-    if (browser) await browser.close();
+    throw new Error("Failed to fetch subURLs");
   }
 };
