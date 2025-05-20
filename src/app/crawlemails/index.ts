@@ -1,9 +1,67 @@
 import axios from "axios";
-// import cheerio from "cheerio";
 import * as cheerio from "cheerio";
 import { URL } from "url";
-import { ContactData, CrawlResult, PageData } from "./types";
-import { IGNOREKEYWORDS, MAXDEPTH, MAXPAGESPERPREFIX } from "./constant";
+import { ContactData } from "./types";
+
+// Constants (assumed to be in ./constant)
+const IGNOREKEYWORDS = [
+  "privacy",
+  "terms",
+  "cookie",
+  "legal",
+  "#",
+  "disclaimer",
+  "policy",
+  "hire",
+  "drupal",
+  "joomla",
+  "wordpress",
+  "cms",
+  "power-bi",
+  "tableau",
+  "xamarin",
+  "ecommerce",
+  "flutter",
+  "react-native",
+  "android",
+  "ios",
+  "mobile-app",
+  "vuejs",
+  "laravel",
+  "angular",
+  "reactjs",
+  "java",
+  "php",
+  "dotnet",
+  "nodejs",
+  "python",
+  "full-stack",
+  "back-end",
+  "front-end",
+  "shopify",
+  "nopcommerce",
+  "guides/tag/",
+  "it-outsourcing-roi-calculator",
+  "careers",
+  "winwithai",
+  "newsletter",
+  "partner",
+  "guide",
+  "stories",
+  "story",
+  "webinar",
+  "custom",
+  "studies",
+  "study",
+  "blog",
+  "sitemap",
+  "free-trial",
+  "pricing",
+  "videos",
+];
+const MAXCONCURRENTPAGES = 3;
+const MAXDEPTH = 2;
+const MAXPAGESPERPREFIX = 2;
 
 // Utility functions
 const shouldIgnore = (url: string): boolean => {
@@ -55,6 +113,7 @@ const getSubURLs = async (mainUrl: string): Promise<string[]> => {
       }
     });
 
+    console.log(`Subpages found: ${subpages.size}`);
     return Array.from(subpages);
   } catch (err) {
     console.error(
@@ -66,86 +125,138 @@ const getSubURLs = async (mainUrl: string): Promise<string[]> => {
 };
 
 // Extract emails and phones
-const extractEmailsAndPhones = (text: string): ContactData => {
-  const emails: string[] = [];
-  const phones: string[] = [];
+const extractEmailsAndPhones = ($: cheerio.CheerioAPI) => {
+  const emails = new Set<string>();
+  const phones = new Set<string>();
 
-  const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
-  const emailMatches = text.match(emailRegex);
-  if (emailMatches) {
-    emails.push(...new Set(emailMatches));
-  }
-
+  // Email regex with strict boundaries
+  const emailRegex =
+    /(?:^|\s)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?=\s|$)/g;
   const phoneRegex =
-    /(\+\d{1,4}[\s-]?)?(\(?\d{2,4}\)?[\s.-]?)?(\d{2,4}[\s.-]?\d{3,4}[\s.-]?\d{3,4})/g;
-  const phoneMatches = text.match(phoneRegex);
-  if (phoneMatches) {
-    phones.push(
-      ...new Set(
-        phoneMatches
-          .map((p) => p.trim())
-          .filter((num) => num.replace(/\D/g, "").length >= 8)
-      )
-    );
-  }
+    /(\+\d{1,4}[\s-]?)?(\(?\d{2,4}\)?[\s.-]?)?\d{2,4}[\s.-]?\d{3,4}[\s.-]?\d{3,4}/g;
 
-  return { emails, phones };
+  // Extract emails from mailto links
+  $("body")
+    .find("a[href^='mailto:']")
+    .each((_, el) => {
+      const href = $(el).attr("href");
+      if (href) {
+        const email = href
+          .replace(/^mailto:/i, "")
+          .split("?")[0]
+          .trim();
+        if (email && emailRegex.test(email)) {
+          emails.add(email);
+        }
+      }
+    });
+
+  // Extract emails and phones from text nodes
+  const traverseNodes = (node: any) => {
+    if (node.type === "text") {
+      console.log("Text node found:", node.data);
+      let text = node.data.replace(/\s+/g, " ").trim();
+      if (!text) return;
+
+      // Preprocess to separate concatenated emails
+      text = text.replace(
+        /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?=[A-Z0-9][a-zA-Z0-9]*\b)/g,
+        "$1 "
+      );
+
+      // Extract emails
+      const emailMatches: string[] = text.match(emailRegex) || [];
+      emailMatches.forEach((email: string) => emails.add(email.trim()));
+
+      // Extract phones
+      const phoneMatches: string[] = text.match(phoneRegex) || [];
+      phoneMatches
+        .map((p: string) => p.trim())
+        .filter((num) => num.replace(/\D/g, "").length >= 8)
+        .forEach((phone) => phones.add(phone));
+    }
+
+    // Recursively process child nodes
+    if (node.childNodes) {
+      node.childNodes.forEach((child: any) => traverseNodes(child));
+    }
+  };
+
+  traverseNodes($("body")[0]);
+
+  return {
+    emails: [...emails],
+    phones: [...phones],
+  };
 };
 
 // Extract main text
-const extractMainTextFromPage = async (url: string): Promise<PageData> => {
+const extractMainTextFromPage = async (url: string): Promise<ContactData> => {
   try {
-    const { data } = await axios.get(url);
+    const { data } = await axios.get(url, { timeout: 30000 });
     const $: cheerio.CheerioAPI = cheerio.load(data);
     $("script, style").remove();
-    const text = $("body").text();
-    const cleanText = text.replace(/\s+/g, " ").trim();
-    const { emails, phones } = extractEmailsAndPhones(cleanText);
-
+    const { emails, phones } = extractEmailsAndPhones($);
     return {
-      url,
-      text: cleanText,
       emails,
       phones,
     };
   } catch (err) {
-    console.error(
+    console.warn(
       `Failed to fetch or parse ${url}:`,
       err instanceof Error ? err.message : err
     );
-    return { url, text: "", emails: [], phones: [] };
+    return { emails: [], phones: [] };
   }
 };
 
+// Process in batches
+const processInBatches = async (
+  items: string[],
+  batchSize: number,
+  processFn: (pageUrl: string) => Promise<ContactData>
+) => {
+  const results: ContactData[] = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const batchResults = await Promise.all(
+      batch.map(async (pageUrl) => await processFn(pageUrl))
+    );
+    results.push(...batchResults);
+  }
+  return results;
+};
+
 // Main crawl function
-export const crawlWebsite = async (
-  mainUrl: string
-): Promise<{ emails: string[]; phones: string[] }> => {
+export const crawlWebsite = async (mainUrl: string): Promise<ContactData> => {
   try {
     const emailSet = new Set<string>();
     const phoneSet = new Set<string>();
-    const data: Record<string, string> = {};
 
     const pages = await getSubURLs(mainUrl);
-    const contentPromises = pages.map(
-      async (pageUrl) => await extractMainTextFromPage(pageUrl)
+    const results = await processInBatches(
+      pages,
+      MAXCONCURRENTPAGES,
+      extractMainTextFromPage
     );
 
-    const results = await Promise.all(contentPromises);
-
-    results.forEach(({ url: pageUrl, text, emails, phones }) => {
-      data[pageUrl] = text;
-      emails.forEach((email) => emailSet.add(email));
-      phones.forEach((phone) => phoneSet.add(phone));
+    results.forEach(({ emails, phones }) => {
+      emails.forEach((email: string) => emailSet.add(email));
+      phones.forEach((phone: string) => phoneSet.add(phone));
     });
 
-    return {
+    const finalResult = {
       emails: Array.from(emailSet),
       phones: Array.from(phoneSet),
-      // pages: data,
     };
+    console.log("Emails:", finalResult.emails);
+    console.log("Phones:", finalResult.phones);
+    return finalResult;
   } catch (err) {
     console.error("Crawl Error:", err instanceof Error ? err.message : err);
     throw new Error("Failed to crawl website");
   }
 };
+
+// Example usage
+// crawlWebsite("https://www.arkasoftwares.com/");

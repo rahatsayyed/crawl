@@ -1,3 +1,4 @@
+// this route fetch's suburls and passes those url with a prompt to grok to generate cover letter
 import { NextRequest, NextResponse } from "next/server";
 import { getSubURLs } from "./crawl";
 import { coverLetter } from "./generate";

@@ -1,8 +1,7 @@
 export const MAXDEPTH: number = 2;
-export const MAXPAGESPERPREFIX: number = 3;
-
+export const MAXPAGESPERPREFIX: number = 2;
+export const MAXCONCURRENTPAGES: number = 3;
 export const IGNOREKEYWORDS = [
-  "privacy",
   "terms",
   "cookie",
   "legal",

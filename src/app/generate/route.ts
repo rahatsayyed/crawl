@@ -1,3 +1,5 @@
+// not using this
+// passes webpage data as prompt
 import { NextRequest, NextResponse } from "next/server";
 import { coverLetter } from ".";
 import { data } from "./data";
