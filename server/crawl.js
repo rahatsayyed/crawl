@@ -1,6 +1,6 @@
-const { puppeteer } = require("puppeteer");
-const { cheerio } = require("cheerio");
-const { URL } = require("url");
+import puppeteer from "puppeteer";
+import * as cheerio from "cheerio";
+import { URL } from "url";
 const IGNOREKEYWORDS = [
   "privacy",
   "terms",
@@ -119,7 +119,7 @@ const fetchWithRetry = async (page, url, options, retries = RETRY_ATTEMPTS) => {
   return false;
 };
 
-const getSubURLs = async (mainUrl) => {
+export const getSubURLs = async (mainUrl) => {
   let browser;
   try {
     browser = await launchBrowser();
@@ -172,7 +172,6 @@ const getSubURLs = async (mainUrl) => {
       }
     });
 
-    console.log(`Subpages found: ${subpages.size}`);
     return Array.from(subpages);
   } catch (err) {
     console.error("Error fetching subURLs:", err.message);
@@ -281,7 +280,7 @@ const processInBatches = async (items, batchSize, processFn) => {
   return results;
 };
 
-const crawlWebsite = async (mainUrl) => {
+export const crawlWebsite = async (mainUrl) => {
   let browser;
   try {
     browser = await launchBrowser();
@@ -302,8 +301,6 @@ const crawlWebsite = async (mainUrl) => {
       emails.forEach((email) => emailSet.add(email));
       phones.forEach((phone) => phoneSet.add(phone));
     });
-    console.log(Array.from(emailSet));
-    console.log(Array.from(phoneSet));
     return {
       emails: Array.from(emailSet),
       phones: Array.from(phoneSet),
@@ -317,5 +314,3 @@ const crawlWebsite = async (mainUrl) => {
 };
 
 // crawlWebsite("https://github.com/rahatsayyed/");
-
-module.exports.crawlWebsite;
