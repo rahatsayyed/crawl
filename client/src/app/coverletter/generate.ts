@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import OpenAI from "openai/index.mjs";
 
 type inputType = { resumeUrl: string; template: string; pages: string[] };
 export async function coverLetter(data: inputType) {

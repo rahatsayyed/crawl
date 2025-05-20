@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import OpenAI from "openai/index.mjs";
 
 const GROKKEY = process.env.GROK_API;
 const client = new OpenAI({

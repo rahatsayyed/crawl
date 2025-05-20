@@ -1,7 +1,6 @@
-import puppeteer from "puppeteer";
-import * as cheerio from "cheerio";
-import { URL } from "url";
-import fs from "fs";
+const { puppeteer } = require("puppeteer");
+const { cheerio } = require("cheerio");
+const { URL } = require("url");
 const IGNOREKEYWORDS = [
   "privacy",
   "terms",
@@ -120,7 +119,7 @@ const fetchWithRetry = async (page, url, options, retries = RETRY_ATTEMPTS) => {
   return false;
 };
 
-export const getSubURLs = async (mainUrl) => {
+const getSubURLs = async (mainUrl) => {
   let browser;
   try {
     browser = await launchBrowser();
@@ -259,7 +258,6 @@ const extractMainTextFromPage = async (url, browser) => {
 
     // Extract emails and phones from the entire body
     const { emails, phones } = extractEmailsAndPhones($, $("body"));
-    fs.writeFileSync(`./data2/data${url}.txt`, $("body").text());
 
     // Store raw text for reference (optional)
     const text = $("body").text().replace(/\s+/g, " ").trim();
@@ -283,7 +281,7 @@ const processInBatches = async (items, batchSize, processFn) => {
   return results;
 };
 
-export const crawlWebsite = async (mainUrl) => {
+const crawlWebsite = async (mainUrl) => {
   let browser;
   try {
     browser = await launchBrowser();
@@ -318,4 +316,6 @@ export const crawlWebsite = async (mainUrl) => {
   }
 };
 
-crawlWebsite("https://github.com/rahatsayyed/");
+// crawlWebsite("https://github.com/rahatsayyed/");
+
+module.exports.crawlWebsite;
