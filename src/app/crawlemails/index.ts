@@ -112,7 +112,7 @@ const getSubURLs = async (mainUrl: string): Promise<string[]> => {
         // Skip invalid URLs
       }
     });
-
+    subpages.add(mainUrl);
     console.log(`Subpages found: ${subpages.size}`);
     return Array.from(subpages);
   } catch (err) {
@@ -154,7 +154,6 @@ const extractEmailsAndPhones = ($: cheerio.CheerioAPI) => {
   // Extract emails and phones from text nodes
   const traverseNodes = (node: any) => {
     if (node.type === "text") {
-      console.log("Text node found:", node.data);
       let text = node.data.replace(/\s+/g, " ").trim();
       if (!text) return;
 
@@ -249,8 +248,6 @@ export const crawlWebsite = async (mainUrl: string): Promise<ContactData> => {
       emails: Array.from(emailSet),
       phones: Array.from(phoneSet),
     };
-    console.log("Emails:", finalResult.emails);
-    console.log("Phones:", finalResult.phones);
     return finalResult;
   } catch (err) {
     console.error("Crawl Error:", err instanceof Error ? err.message : err);
