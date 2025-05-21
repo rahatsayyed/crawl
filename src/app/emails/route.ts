@@ -1,3 +1,5 @@
+// want to use puppeteer to scrape the email address from the given URL
+
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 
