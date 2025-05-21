@@ -17,17 +17,20 @@ export async function handler(event, context) {
       };
     }
 
+    const executablePath =
+      process.env.CHROME_EXECUTABLE_PATH || (await chromium.executablePath());
+    console.log("Chromium executable path:", executablePath);
     // Launch Puppeteer browser
     const browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath:
-        process.env.CHROME_EXECUTABLE_PATH ||
-        (await chromium.executablePath(
-          "/var/task/node_modules/@sparticuz/chromium/bin"
-        )),
+      executablePath: executablePath,
+      headless: chromium.headless,
     });
 
+    console.log(
+      "launced browser======================================================================"
+    );
     // Open a new page
     const page = await browser.newPage();
 

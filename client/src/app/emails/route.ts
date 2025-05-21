@@ -15,7 +15,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Forward request to Netlify function
-    const netlifyFunctionUrl = "/.netlify/functions/emails";
+    const isDev = process.env.NODE_ENV === "development";
+    const baseUrl = isDev
+      ? "http://localhost:8888"
+      : process.env.NEXT_PUBLIC_SITE_URL;
+    const netlifyFunctionUrl = `${baseUrl}/.netlify/functions/puppet`;
+    // Forward request to Netlify function
     const response = await axios.post(
       netlifyFunctionUrl,
       { url },
@@ -23,6 +28,8 @@ export async function POST(request: NextRequest) {
         headers: { "Content-Type": "application/json" },
       }
     );
+
+    console.log("Netlify function response:", response.data);
 
     // Return the Netlify function's response
     return NextResponse.json(response.data, { status: 200 });
