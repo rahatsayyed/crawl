@@ -52,13 +52,10 @@ export const getSubURLs = async (mainUrl: string): Promise<string[]> => {
         // Skip invalid URLs
       }
     });
-
+    subpages.add(mainUrl);
     return Array.from(subpages);
-  } catch (err) {
-    console.error(
-      "Error fetching subURLs:",
-      err instanceof Error ? err.message : err
-    );
-    throw new Error("Failed to fetch subURLs");
+  } catch (error: any) {
+    console.error(`failed to fetch subURLs: ${error.message}`);
+    throw new Error(`failed to fetch subURLs: ${error.message}`);
   }
 };
