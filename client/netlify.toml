@@ -1,0 +1,17 @@
+[build]
+  command = "npm run build"  # Next.js build command
+  publish = ".next"          # Next.js output directory
+  functions = "netlify/functions"  # Directory for serverless functions
+
+[dev]
+  autoLaunch = false         # Disable auto-launch for local dev
+
+[functions]
+  node_bundler = "esbuild"   # Use esbuild for bundling
+  external_node_modules = ["@sparticuz/chromium"]  # Ensure Chromium is included
+
+[[redirects]]
+  from = "/emails"
+  to = "/.netlify/functions/emails"
+  status = 200
+  force = true
