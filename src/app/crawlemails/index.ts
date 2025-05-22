@@ -115,12 +115,9 @@ const getSubURLs = async (mainUrl: string): Promise<string[]> => {
     subpages.add(mainUrl);
     console.log(`Subpages found: ${subpages.size}`);
     return Array.from(subpages);
-  } catch (err) {
-    console.error(
-      "Error fetching subURLs:",
-      err instanceof Error ? err.message : err
-    );
-    return [];
+  } catch (error: any) {
+    console.error(`Error fetching subURLs: ${error.message}`);
+    throw new Error(`Error fetching subURLs: ${error.message}`);
   }
 };
 
@@ -200,12 +197,12 @@ const extractMainTextFromPage = async (url: string): Promise<ContactData> => {
       emails,
       phones,
     };
-  } catch (err) {
+  } catch (error: any) {
     console.warn(
       `Failed to fetch or parse ${url}:`,
-      err instanceof Error ? err.message : err
+      error instanceof Error ? error.message : error
     );
-    return { emails: [], phones: [] };
+    throw error;
   }
 };
 
@@ -249,9 +246,12 @@ export const crawlWebsite = async (mainUrl: string): Promise<ContactData> => {
       phones: Array.from(phoneSet),
     };
     return finalResult;
-  } catch (err) {
-    console.error("Crawl Error:", err instanceof Error ? err.message : err);
-    throw new Error("Failed to crawl website");
+  } catch (error: any) {
+    console.error(
+      "Crawl Error:",
+      error instanceof Error ? error.message : error
+    );
+    throw error;
   }
 };
 

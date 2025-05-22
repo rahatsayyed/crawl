@@ -28,13 +28,13 @@ export async function POST(request: NextRequest) {
       template,
     });
     return NextResponse.json(result);
-  } catch (err) {
+  } catch (err: any) {
     console.error("API Error:", err);
     if (err instanceof Error) {
       return NextResponse.json({ error: err.message }, { status: 400 });
     }
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: err.message || "Something went wrong" },
       { status: 500 }
     );
   }
