@@ -202,7 +202,11 @@ const extractMainTextFromPage = async (url: string): Promise<ContactData> => {
       `Failed to fetch or parse ${url}:`,
       error instanceof Error ? error.message : error
     );
-    throw error;
+    // throw error;
+    return {
+      emails: [],
+      phones: [],
+    };
   }
 };
 
