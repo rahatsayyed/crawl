@@ -28,7 +28,7 @@ export async function coverLetter(data: inputType) {
         The modified template should feel cohesive, natural, and tailored to the company.
       5. **Word Count**: Ensure the total cover letter (excluding HTML tags) is 170–200 words, with the personalized content (woven into the template) being 50–80 words. Adjust template wording if needed to stay within limits.
       6. **Output**: Return only modified cover letter in HTML format in the field.
-      7. **Keep Name Handle**: Ensure the generated cover lettet (HTML-FORMATTED) includes {{name}} as it is.
+      7. **Keep Name Handle**: Ensure the generated cover letter (HTML-FORMATTED) includes {{name}} as it is.
 
       **Output Format**:
         "Complete HTML-formatted cover letter with personalized content without <html> & <body> tags"
