@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { crawlWebsite } from ".";
+import { getSubURLs } from "@/utils/SubUrls";
+import { crawlEmails } from "@/utils/ExtractEmail";
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,7 +28,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await crawlWebsite(mainUrl);
+    const pages = await getSubURLs(mainUrl);
+    const result = await crawlEmails(pages);
 
     return NextResponse.json(result);
   } catch (error: any) {
