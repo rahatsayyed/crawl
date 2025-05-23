@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSubURLs } from "@/utils/SubUrls";
 import { crawlEmails } from "@/utils/ExtractEmail";
+import { CONTACTS_IGNOREKEYWORDS } from "@/constants/constant";
 
 export async function GET(request: NextRequest) {
   try {
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const pages = await getSubURLs(mainUrl);
+    const pages = await getSubURLs(mainUrl, CONTACTS_IGNOREKEYWORDS);
     const result = await crawlEmails(pages);
 
     return NextResponse.json(result);

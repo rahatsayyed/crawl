@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSubURLs } from "@/utils/SubUrls";
 import { coverLetter } from "@/utils/GenerateCoverLetter";
+import { COVERLETTER_IGNOREKEYWORDS } from "@/constants/constant";
 
 export async function GET() {
   return NextResponse.json("UP and RUNNING");
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const pages = await getSubURLs(mainUrl);
+    const pages = await getSubURLs(mainUrl, COVERLETTER_IGNOREKEYWORDS);
     const result = await coverLetter({
       pages,
       resumeUrl,

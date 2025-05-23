@@ -1,15 +1,10 @@
-import {
-  IGNOREKEYWORDS,
-  MAXDEPTH,
-  MAXPAGESPERPREFIX,
-} from "@/constants/constant";
-import { ContactData } from "@/types/types";
+import { MAXDEPTH, MAXPAGESPERPREFIX } from "@/constants/constant";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import { URL } from "url";
 
 // Utility functions
-const shouldIgnore = (url: string): boolean => {
+const shouldIgnore = (url: string, IGNOREKEYWORDS: string[]): boolean => {
   return IGNOREKEYWORDS.some((keyword) => url.toLowerCase().includes(keyword));
 };
 
@@ -18,7 +13,10 @@ const getPathDepth = (pathname: string): number => {
 };
 
 // Extract subpages
-export const getSubURLs = async (mainUrl: string): Promise<string[]> => {
+export const getSubURLs = async (
+  mainUrl: string,
+  IGNOREKEYWORDS: string[]
+): Promise<string[]> => {
   try {
     const response = await axios.get(mainUrl);
     const $: cheerio.CheerioAPI = cheerio.load(response.data);
@@ -40,7 +38,7 @@ export const getSubURLs = async (mainUrl: string): Promise<string[]> => {
 
         if (
           fullUrl.hostname !== new URL(mainUrl).hostname ||
-          shouldIgnore(fullHref)
+          shouldIgnore(fullHref, IGNOREKEYWORDS)
         )
           return;
 
