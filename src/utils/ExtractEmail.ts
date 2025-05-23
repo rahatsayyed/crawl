@@ -2,6 +2,19 @@ import { MAXCONCURRENTPAGES } from "@/constants/constant";
 import { ContactData } from "@/types/types";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import https from "https";
+
+const USER_AGENTS = [
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36",
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.101 Safari/537.36",
+];
+
+// Utility to get random User-Agent
+const getRandomUserAgent = () => {
+  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+};
+
 // Extract emails and phones
 const extractEmailsAndPhones = ($: cheerio.CheerioAPI) => {
   const emails = new Set<string>();
@@ -70,7 +83,14 @@ const extractEmailsAndPhones = ($: cheerio.CheerioAPI) => {
 // Extract main text
 const extractMainTextFromPage = async (url: string): Promise<ContactData> => {
   try {
-    const { data } = await axios.get(url, { timeout: 30000 });
+    const { data } = await axios.get(url, {
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false, // Bypass SSL verification
+      }),
+      headers: {
+        "User-Agent": getRandomUserAgent(), // Rotate User-Agent
+      },
+    });
     const $: cheerio.CheerioAPI = cheerio.load(data);
     $("script, style").remove();
     const { emails, phones } = extractEmailsAndPhones($);

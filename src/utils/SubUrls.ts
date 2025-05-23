@@ -2,7 +2,7 @@ import { MAXDEPTH, MAXPAGESPERPREFIX } from "@/constants/constant";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import { URL } from "url";
-
+import https from "https";
 // Utility functions
 const shouldIgnore = (url: string, IGNOREKEYWORDS: string[]): boolean => {
   return IGNOREKEYWORDS.some((keyword) => url.toLowerCase().includes(keyword));
@@ -18,7 +18,11 @@ export const getSubURLs = async (
   IGNOREKEYWORDS: string[]
 ): Promise<string[]> => {
   try {
-    const response = await axios.get(mainUrl);
+    const response = await axios.get(mainUrl, {
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false, // Bypass SSL verification
+      }),
+    });
     const $: cheerio.CheerioAPI = cheerio.load(response.data);
     const subpages = new Set<string>();
     const prefixCounter: Record<string, number> = {};
