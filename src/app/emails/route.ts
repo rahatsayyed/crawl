@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     // Extract URL from the request body
     const body = await request.json();
-    const { url } = body;
+    const { url, spreadsheetId, sheetName } = body;
     if (!url) {
       return NextResponse.json(
         { error: "URL parameter is required" },
@@ -17,12 +17,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Call the Netlify Background Function
-    const netlifyResponse = await fetch(`${NETLIFY_FUNCTIONS_URL}/emails`, {
+    const netlifyResponse = await fetch(`${NETLIFY_FUNCTIONS_URL}/emails2`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ urltoFetch: url }),
+      body: JSON.stringify({ urltoFetch: url, spreadsheetId, sheetName }),
     });
 
     const data = await netlifyResponse.json();
