@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call the Netlify Background Function
-    const netlifyResponse = await fetch(`${NETLIFY_FUNCTIONS_URL}/emails2`, {
+    const netlifyResponse = await fetch(`${NETLIFY_FUNCTIONS_URL}/emails`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -43,44 +43,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    // Get taskId from query parameters
-    const { searchParams } = new URL(request.url);
-    const taskId = searchParams.get("taskId");
-
-    if (!taskId) {
-      return NextResponse.json(
-        { error: "taskId parameter is required" },
-        { status: 400 }
-      );
-    }
-
-    // Call the Netlify get-task-result function
-    const netlifyResponse = await fetch(
-      `${NETLIFY_FUNCTIONS_URL}/emails?taskId=${taskId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    const data = await netlifyResponse.json();
-    console.log("Netlify Response:", data);
-
-    if (!netlifyResponse.ok) {
-      return NextResponse.json(
-        { error: data.error || "Failed to fetch task result" },
-        { status: netlifyResponse.status }
-      );
-    }
-
-    return NextResponse.json(data, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: "Internal server error", details: error.message },
-      { status: 500 }
-    );
-  }
+export async function GET() {
+  return NextResponse.json("up and running");
 }
