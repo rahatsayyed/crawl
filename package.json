@@ -9,15 +9,14 @@
     "netlify": "netlify dev"
   },
   "dependencies": {
-    "@sparticuz/chromium": "^113.0.1",
     "axios": "^1.9.0",
     "cheerio": "^1.0.0",
     "netlify-cli": "^21.5.0",
     "next": "15.3.2",
     "openai": "^4.98.0",
     "p-limit": "^6.2.0",
-    "puppeteer-core": "^20.9.0",
-    "url": "^0.11.4"
+    "url": "^0.11.4",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/node": "^20",
