@@ -4,7 +4,7 @@ import axios, { AxiosError } from "axios";
 import * as cheerio from "cheerio";
 import https from "https";
 import pLimit from "p-limit"; // Add p-limit for concurrency control
-
+import * as fs from "fs";
 // List of User-Agent strings for rotation
 const USER_AGENTS = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
@@ -45,11 +45,14 @@ const extractEmailsAndPhones = ($: cheerio.CheerioAPI) => {
       }
     });
 
-  const traverseNodes = (node: any) => {
+  const traverseNodes = (node: any, i = 1) => {
+    console.log("started traversing nodes");
+    console.log(node);
+
     if (node.type === "text") {
       let text = node.data.replace(/\s+/g, " ").trim();
       if (!text) return;
-
+      fs.writeFileSync(`./data/test-${i}.txt`, text); // Save text to file for debugging
       text = text.replace(
         /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(?=[A-Z0-9][a-zA-Z0-9]*\b)/g,
         "$1 "
@@ -66,7 +69,7 @@ const extractEmailsAndPhones = ($: cheerio.CheerioAPI) => {
     }
 
     if (node.childNodes) {
-      node.childNodes.forEach((child: any) => traverseNodes(child));
+      node.childNodes.forEach((child: any) => traverseNodes(child, i++));
     }
   };
 
