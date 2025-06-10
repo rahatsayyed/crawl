@@ -113,7 +113,7 @@ exports.handler = async function (event, context) {
           range: `${sheetName}!C${rowIndex}:D${rowIndex}`,
           valueInputOption: "RAW",
           resource: {
-            values: [[[...emails].join(", "), [...phones].join(", ")]],
+            values: [[[...phones].join(", "), [...emails].join(", ")]],
           },
         });
       } catch (error) {
