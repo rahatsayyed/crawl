@@ -46,9 +46,6 @@ const extractEmailsAndPhones = ($: cheerio.CheerioAPI) => {
     });
 
   const traverseNodes = (node: any, i = 1) => {
-    console.log("started traversing nodes");
-    console.log(node);
-
     if (node.type === "text") {
       let text = node.data.replace(/\s+/g, " ").trim();
       if (!text) return;
