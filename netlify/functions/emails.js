@@ -61,7 +61,7 @@ exports.handler = async function (event, context) {
       try {
         // Loop over each URL
         for (const url of urlstoFetch) {
-          console.log("url", url);
+          console.log("url to fetch", url);
           const payload = {
             url,
             options: {
@@ -92,7 +92,7 @@ exports.handler = async function (event, context) {
           extractedEmails.forEach((email) => emails.add(email));
           extractedPhones.forEach((phone) => phones.add(phone));
         }
-
+        console.log("updateing sheet", emails, phones);
         // Find the row where taskId matches in column J
         const sheetData = await sheets.spreadsheets.values.get({
           spreadsheetId,

@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
       );
     }
     const pages = await getSubURLs(url, CONTACTS_IGNOREKEYWORDS);
+    console.log("pages to fetch", pages);
     // Call the Netlify Background Function
     const netlifyResponse = await fetch(`${NETLIFY_FUNCTIONS_URL}/emails`, {
       method: "POST",
