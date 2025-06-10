@@ -1,3 +1,5 @@
+import { CONTACTS_IGNOREKEYWORDS } from "@/constants/constant";
+import { getSubURLs } from "@/utils/SubUrls";
 import { NextRequest, NextResponse } from "next/server";
 const isDev = process.env.NODE_ENV === "development";
 const baseUrl = isDev
@@ -15,14 +17,14 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
+    const pages = await getSubURLs(url, CONTACTS_IGNOREKEYWORDS);
     // Call the Netlify Background Function
     const netlifyResponse = await fetch(`${NETLIFY_FUNCTIONS_URL}/emails`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ urltoFetch: url, spreadsheetId, sheetName }),
+      body: JSON.stringify({ urlstoFetch: pages, spreadsheetId, sheetName }),
     });
 
     const data = await netlifyResponse.json();

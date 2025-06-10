@@ -34,19 +34,19 @@ const extractEmailsAndPhones = (data) => {
 };
 exports.handler = async function (event, context) {
   try {
-    const { urltoFetch, spreadsheetId, sheetName } = JSON.parse(event.body);
+    const { urlstoFetch, spreadsheetId, sheetName } = JSON.parse(event.body);
 
     if (
-      !Array.isArray(urltoFetch) ||
+      !Array.isArray(urlstoFetch) ||
       !spreadsheetId ||
       !sheetName ||
-      urltoFetch.length === 0
+      urlstoFetch.length === 0
     ) {
       return {
         statusCode: 400,
         body: JSON.stringify({
           error:
-            "urltoFetch (array), spreadsheetId, and sheetName are required",
+            "urlstoFetch (array), spreadsheetId, and sheetName are required",
         }),
       };
     }
@@ -58,7 +58,8 @@ exports.handler = async function (event, context) {
     (async () => {
       try {
         // Loop over each URL
-        for (const url of urltoFetch) {
+        for (const url of urlstoFetch) {
+          console.log("url", url);
           const payload = {
             url,
             options: {

@@ -1,5 +1,4 @@
 // netlify/functions/extract-suburls.ts
-import { Handler } from "@netlify/functions";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import { URL } from "url";
