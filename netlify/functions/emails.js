@@ -56,43 +56,44 @@ exports.handler = async function (event, context) {
     const taskId = uuidv4();
     const emails = new Set();
     const phones = new Set();
+    const errors = [];
 
     (async () => {
       try {
         // Loop over each URL
         for (const url of urlstoFetch) {
-          console.log("url to fetch", url);
-          const payload = {
-            url,
-            options: {
-              format: "text",
-              textOnly: true,
-              ignoreLinks: false,
-              includeElements: "",
-              excludeElements: "",
-            },
-          };
-
-          const response = await fetch(
-            "https://yourgpt.ai/api/extractWebpageText",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
+          try {
+            const payload = {
+              url,
+              options: {
+                format: "text",
+                textOnly: true,
+                ignoreLinks: false,
+                includeElements: "",
+                excludeElements: "",
               },
-              body: JSON.stringify(payload),
-            }
-          );
+            };
 
-          const data = await response.json();
-          const { emails: extractedEmails, phones: extractedPhones } =
-            extractEmailsAndPhones(data.content);
+            const response = await fetch(
+              "https://yourgpt.ai/api/extractWebpageText",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+              }
+            );
 
-          // Combine results
-          extractedEmails.forEach((email) => emails.add(email));
-          extractedPhones.forEach((phone) => phones.add(phone));
+            const data = await response.json();
+            const { emails: extractedEmails, phones: extractedPhones } =
+              extractEmailsAndPhones(data.content);
+
+            extractedEmails.forEach((email) => emails.add(email));
+            extractedPhones.forEach((phone) => phones.add(phone));
+          } catch (error) {
+            console.error(`Error fetching ${url}:`, error.message);
+            errors.push(`Error fetching ${url}: ${error.message}`);
+          }
         }
-        console.log("updateing sheet", emails, phones);
         // Find the row where taskId matches in column J
         const sheetData = await sheets.spreadsheets.values.get({
           spreadsheetId,
@@ -110,12 +111,30 @@ exports.handler = async function (event, context) {
         // Update sheet with combined emails and phones
         await sheets.spreadsheets.values.update({
           spreadsheetId,
-          range: `${sheetName}!C${rowIndex}:D${rowIndex}`,
+          range: `${sheetName}!C${rowIndex}:I${rowIndex}`,
           valueInputOption: "RAW",
           resource: {
-            values: [[[...phones].join(", "), [...emails].join(", ")]],
+            values: [
+              [
+                [...phones].join(", "),
+                [...emails].join(", "),
+                ,
+                ,
+                ,
+                ,
+                errors.join("; ") || "No errors",
+              ],
+            ],
           },
         });
+        // await sheets.spreadsheets.values.update({
+        //   spreadsheetId,
+        //   range: `${sheetName}!C${rowIndex}:D${rowIndex}`,
+        //   valueInputOption: "RAW",
+        //   resource: {
+        //     values: [[[...phones].join(", "), [...emails].join(", ")]],
+        //   },
+        // });
       } catch (error) {
         console.error("Error processing URLs:", error.message);
 
