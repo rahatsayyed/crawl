@@ -1,11 +1,12 @@
 [build]
-  command = "npm run build"  # Next.js build command
-  publish = ".next"          # Next.js output directory
-  functions = "netlify/functions"  # Directory for serverless functions
-
-[dev]
-  autoLaunch = false
+  functions = "netlify/functions"
 
 [functions]
   node_bundler = "esbuild"
-  external_node_modules = ["@sparticuz/chromium"]
+  external_node_modules = ["@sparticuz/chromium", "googleapis", "node-fetch", "uuid"]
+
+[functions.emails]
+  background = true
+
+[dev]
+  autoLaunch = false

@@ -19,13 +19,16 @@ export async function POST(request: NextRequest) {
     }
     const pages = await getSubURLs(url, CONTACTS_IGNOREKEYWORDS);
     // Call the Netlify Background Function
-    const netlifyResponse = await fetch(`${NETLIFY_FUNCTIONS_URL}/emails`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ urlstoFetch: pages, spreadsheetId, sheetName }),
-    });
+    const netlifyResponse = await fetch(
+      `${NETLIFY_FUNCTIONS_URL}/emails-background`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ urlstoFetch: pages, spreadsheetId, sheetName }),
+      }
+    );
 
     const data = await netlifyResponse.json();
 

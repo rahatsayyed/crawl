@@ -37,7 +37,7 @@ const extractEmailsAndPhones = (data) => {
 exports.handler = async function (event, context) {
   try {
     const { urlstoFetch, spreadsheetId, sheetName } = JSON.parse(event.body);
-
+    console.log("running emails function");
     if (
       !Array.isArray(urlstoFetch) ||
       !spreadsheetId ||
@@ -82,6 +82,22 @@ exports.handler = async function (event, context) {
                 body: JSON.stringify(payload),
               }
             );
+            if (!response.ok) {
+              throw new Error(
+                `HTTP error ${response.status}: ${response.statusText}`
+              );
+            }
+
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+              const text = await response.text();
+              throw new Error(
+                `Invalid content type: ${contentType}, response: ${text.slice(
+                  0,
+                  100
+                )}`
+              );
+            }
 
             const data = await response.json();
             const { emails: extractedEmails, phones: extractedPhones } =
