@@ -1,3 +1,5 @@
+// uses `yourgpt.ai` to extract the data from the website
+
 const fetch = require("node-fetch");
 const { v4: uuidv4 } = require("uuid");
 const { google } = require("googleapis");
