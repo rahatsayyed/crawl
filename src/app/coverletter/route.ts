@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
     const mainUrl = body.url;
     const resumeUrl = body.resumeUrl;
     const template = body.template;
+    const apiKey = body.api;
 
     if (!mainUrl || !mainUrl.startsWith("http")) {
       return NextResponse.json(
@@ -29,11 +30,14 @@ export async function POST(request: NextRequest) {
     }
 
     const pages = await getSubURLs(mainUrl, COVERLETTER_IGNOREKEYWORDS);
-    const result = await coverLetter({
-      pages,
-      resumeUrl,
-      template,
-    });
+    const result = await coverLetter(
+      {
+        pages,
+        resumeUrl,
+        template,
+      },
+      apiKey
+    );
     return NextResponse.json(result);
   } catch (err: any) {
     console.error("API Error:", err);

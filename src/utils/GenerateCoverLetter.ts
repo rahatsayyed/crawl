@@ -1,9 +1,9 @@
 import OpenAI from "openai/index.mjs";
 
 type inputType = { resumeUrl: string; template: string; pages: string[] };
-export async function coverLetter(data: inputType) {
+export async function coverLetter(data: inputType, apiKey: string) {
   const client = new OpenAI({
-    apiKey: process.env.GROK_API,
+    apiKey: apiKey,
     baseURL: "https://api.x.ai/v1",
   });
   try {
