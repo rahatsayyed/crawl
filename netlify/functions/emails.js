@@ -8,56 +8,117 @@ const auth = new google.auth.GoogleAuth({
   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
 const sheets = google.sheets({ version: "v4", auth });
+const extractEmailsAndPhones = (data) => {
+  const emails = new Set();
+  const phones = new Set();
 
+  const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+  const phoneRegex =
+    /(\+\d{1,4}[\s-]?)?(\(?\d{2,4}\)?[\s.-]?)?\d{2,4}[\s.-]?\d{3,4}[\s.-]?\d{3,4}/g;
+
+  const text = typeof data === "object" ? JSON.stringify(data) : data;
+
+  const emailMatches = text.match(emailRegex) || [];
+  emailMatches.forEach((email) => emails.add(email.trim()));
+
+  const phoneMatches = text.match(phoneRegex) || [];
+  phoneMatches
+    .map((phone) => phone.trim())
+    .filter((num) => num.replace(/\D/g, "").length >= 8)
+    .forEach((phone) => phones.add(phone));
+
+  return {
+    emails: [...emails],
+    phones: [...phones],
+  };
+};
 exports.handler = async function (event, context) {
   try {
-    // Parse the incoming request body
     const { urltoFetch, spreadsheetId, sheetName } = JSON.parse(event.body);
 
-    if (!urltoFetch || !spreadsheetId || !sheetName) {
+    if (
+      !Array.isArray(urltoFetch) ||
+      !spreadsheetId ||
+      !sheetName ||
+      urltoFetch.length === 0
+    ) {
       return {
         statusCode: 400,
         body: JSON.stringify({
-          error: "urltoFetch, spreadsheetId, and sheetName are required",
+          error:
+            "urltoFetch (array), spreadsheetId, and sheetName are required",
         }),
       };
     }
 
-    // Generate a unique task ID
     const taskId = uuidv4();
+    const emails = new Set();
+    const phones = new Set();
 
-    // Define the payload
-    const payload = {
-      url: urltoFetch,
-      options: {
-        format: "text",
-        textOnly: false,
-        ignoreLinks: false,
-        includeElements: "",
-        excludeElements: "",
-      },
-    };
-
-    // Perform the POST request in the background
     (async () => {
       try {
-        const response = await fetch(
-          "https://yourgpt.ai/api/extractWebpageText",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
+        // Loop over each URL
+        for (const url of urltoFetch) {
+          const payload = {
+            url,
+            options: {
+              format: "text",
+              textOnly: true,
+              ignoreLinks: false,
+              includeElements: "",
+              excludeElements: "",
             },
-            body: JSON.stringify(payload),
-          }
-        );
+          };
 
-        const data = await response.json();
+          const response = await fetch(
+            "https://yourgpt.ai/api/extractWebpageText",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            }
+          );
+
+          const data = await response.json();
+          const { emails: extractedEmails, phones: extractedPhones } =
+            extractEmailsAndPhones(data.content);
+
+          // Combine results
+          extractedEmails.forEach((email) => emails.add(email));
+          extractedPhones.forEach((phone) => phones.add(phone));
+        }
 
         // Find the row where taskId matches in column J
         const sheetData = await sheets.spreadsheets.values.get({
           spreadsheetId,
-          range: `${sheetName}!J:J`, // Read column J (Task ID)
+          range: `${sheetName}!J:J`,
+        });
+
+        const rows = sheetData.data.values || [];
+        const rowIndex =
+          rows.findIndex((row, index) => row[0] === taskId && index >= 1) + 1;
+        if (rowIndex === 0) {
+          console.error("Task ID not found in sheet");
+          return;
+        }
+
+        // Update sheet with combined emails and phones
+        await sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: `${sheetName}!C${rowIndex}:D${rowIndex}`,
+          valueInputOption: "RAW",
+          resource: {
+            values: [[[...emails].join(", "), [...phones].join(", ")]],
+          },
+        });
+      } catch (error) {
+        console.error("Error processing URLs:", error.message);
+
+        const sheetData = await sheets.spreadsheets.values.get({
+          spreadsheetId,
+          range: `${sheetName}!J:J`,
         });
 
         const rows = sheetData.data.values || [];
@@ -71,43 +132,15 @@ exports.handler = async function (event, context) {
 
         await sheets.spreadsheets.values.update({
           spreadsheetId,
-          range: `${sheetName}!C${rowIndex}:D${rowIndex}`,
+          range: `${sheetName}!I${rowIndex}`,
           valueInputOption: "RAW",
           resource: {
-            values: [["column c updated", JSON.stringify(data).slice(0, 20)]], // D: Result, I: null, J: Task ID
-          },
-        });
-      } catch (error) {
-        console.error("Error fetching URL:", error.message);
-
-        // Find the row where taskId matches in column J
-        const sheetData = await sheets.spreadsheets.values.get({
-          spreadsheetId,
-          range: `${sheetName}!J:J`, // Read column J (Task ID)
-        });
-
-        const rows = sheetData.data.values || [];
-        const rowIndex =
-          rows.findIndex((row, index) => row[0] === taskId && index >= 1) + 1; // Skip header row
-
-        if (rowIndex === 0) {
-          console.error("Task ID not found in sheet");
-          return;
-        }
-
-        // Update column I (Error) for failure
-        await sheets.spreadsheets.values.update({
-          spreadsheetId,
-          range: `${sheetName}!I${rowIndex}`, // Update D to J
-          valueInputOption: "RAW",
-          resource: {
-            values: [[error.message]], // D: null, I: Error, J: Task ID
+            values: [[error.message]],
           },
         });
       }
     })();
 
-    // Return task ID immediately
     return {
       statusCode: 202,
       body: JSON.stringify({ taskId }),
