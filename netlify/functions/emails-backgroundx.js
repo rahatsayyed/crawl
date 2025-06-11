@@ -25,12 +25,11 @@ const extractEmailsAndPhones = (data) => {
 };
 
 exports.handler = async function (event, context) {
+  console.log("Running emails function");
+  const { urlstoFetch, spreadsheetId, sheetName, taskId } = JSON.parse(
+    event.body
+  );
   try {
-    console.log("Running emails function");
-    const { urlstoFetch, spreadsheetId, sheetName, taskId } = JSON.parse(
-      event.body
-    );
-
     if (
       !Array.isArray(urlstoFetch) ||
       !spreadsheetId ||
@@ -121,7 +120,7 @@ exports.handler = async function (event, context) {
 
     if (rowIndex === 0) {
       console.error("Task ID not found in sheet");
-      return;
+      throw new Error("Task ID not found in sheet");
     }
 
     await sheets.spreadsheets.values.update({
@@ -142,24 +141,6 @@ exports.handler = async function (event, context) {
         ],
       },
     });
-
-    // await sheets.spreadsheets.values.update({
-    //   spreadsheetId,
-    //   range: `${sheetName}!C${rowIndex}:D${rowIndex}`,
-    //   valueInputOption: "RAW",
-    //   resource: {
-    //     values: [[[...phones].join(", "), [...emails].join(", ")]],
-    //   },
-    // });
-
-    // await sheets.spreadsheets.values.update({
-    //   spreadsheetId,
-    //   range: `${sheetName}!I${rowIndex}`,
-    //   valueInputOption: "RAW",
-    //   resource: {
-    //     values: [[errors.join("; ")]],
-    //   },
-    // });
 
     return {
       statusCode: 200,
@@ -183,7 +164,7 @@ exports.handler = async function (event, context) {
 
     if (rowIndex === 0) {
       console.error("Task ID not found in sheet");
-      return;
+      return "Task ID not found in sheet";
     }
 
     await sheets.spreadsheets.values.update({
@@ -194,5 +175,6 @@ exports.handler = async function (event, context) {
         values: [[error.message]],
       },
     });
+    return error.message;
   }
 };
