@@ -3,6 +3,7 @@
 ## Prerequisites
 
 - Clone the repository: `https://github.com/rahatsayyed/crawl/`
+- Copy the template: `https://docs.google.com/spreadsheets/d/1JNOURbShSe5REKSwuOvgAfqHZB8qCkmkZvikuj4zBn8/edit?usp=sharing`
 
 ## Setup Steps
 
