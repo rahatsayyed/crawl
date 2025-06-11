@@ -8,5 +8,12 @@
 [functions.emails]
   background = true
 
+[functions.emails-background]
+  background = true
+
 [dev]
   autoLaunch = false
+
+[build.environment]
+  NODE_VERSION = "18"
+  NETLIFY_FUNCTIONS_URL = "https://rahat-crawl.netlify.app/.netlify/functions"
