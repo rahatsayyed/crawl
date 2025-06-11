@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     const pages = await getSubURLs(url, CONTACTS_IGNOREKEYWORDS);
 
     // Trigger emails-background function without awaiting
-    fetch(`${NETLIFY_FUNCTIONS_URL}/emails-background`, {
+    fetch(`${NETLIFY_FUNCTIONS_URL}/emails-backgroundx`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
